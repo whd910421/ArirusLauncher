@@ -12,7 +12,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -39,6 +42,61 @@ public class NerdLauncherFragment extends Fragment {
         return v;
     }
 
+    private class ActivityHolder extends RecyclerView.ViewHolder
+    {
+        private ResolveInfo mResolveInfo;
+        private TextView mTextView;
+        public ActivityHolder(View itemView) {
+            super(itemView);
+            mTextView = (TextView) itemView;
+        }
+
+        public void bindActivity(ResolveInfo resolveInfo)
+        {
+            mResolveInfo = resolveInfo;
+            PackageManager pm = getActivity().getPackageManager();
+            String appName = mResolveInfo.loadLabel(pm).toString();
+            mTextView.setText(appName);
+            mTextView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent().setClassName(mResolveInfo.activityInfo.applicationInfo.packageName,mResolveInfo.activityInfo.name);
+                    startActivity(intent);
+                    arirusLog.get().ShowLog(TAG, mResolveInfo.activityInfo.applicationInfo.packageName, mResolveInfo.activityInfo.name);
+                    arirusLog.get().ShowLog(TAG, getActivity().getPackageName(), NerdLauncherActivity.class.getName()); //这种方法用于启动同一个app中的不同activity
+                }
+            });
+        }
+    }
+
+    private class ActivityAdapter extends RecyclerView.Adapter<ActivityHolder>
+    {
+        private final List<ResolveInfo> mActivities;
+
+
+        public ActivityAdapter(List<ResolveInfo> activities) {
+            mActivities = activities;
+        }
+
+        @Override
+        public ActivityHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
+            View view = layoutInflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+            return new ActivityHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(ActivityHolder holder, int position) {
+            ResolveInfo resolveInfo = mActivities.get(position);
+            holder.bindActivity(resolveInfo);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mActivities.size();
+        }
+    }
+
     private void setupAdapter()
     {
         Intent startupIntent = new Intent(Intent.ACTION_MAIN);
@@ -47,6 +105,18 @@ public class NerdLauncherFragment extends Fragment {
         PackageManager pm = getActivity().getPackageManager();
         List<ResolveInfo> activities = pm.queryIntentActivities(startupIntent,0);
 
+        Collections.sort(activities, new Comparator<ResolveInfo>() {
+            PackageManager pm = getActivity().getPackageManager();
+
+            @Override
+            public int compare(ResolveInfo o1, ResolveInfo o2) {
+                return String.CASE_INSENSITIVE_ORDER.compare(
+                        o1.loadLabel(pm).toString(),
+                        o2.loadLabel(pm).toString()
+                );
+            }
+        });
+        mRecyclerView.setAdapter(new ActivityAdapter(activities));
         Log.i(TAG, "Found " + activities.size() + " activities.");
     }
 }
