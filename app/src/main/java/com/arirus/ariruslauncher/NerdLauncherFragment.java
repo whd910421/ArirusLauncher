@@ -60,7 +60,10 @@ public class NerdLauncherFragment extends Fragment {
             mTextView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent().setClassName(mResolveInfo.activityInfo.applicationInfo.packageName,mResolveInfo.activityInfo.name);
+                    Intent intent = new Intent().
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).
+                    setClassName(mResolveInfo.activityInfo.applicationInfo.packageName,mResolveInfo.activityInfo.name);
+
                     startActivity(intent);
                     arirusLog.get().ShowLog(TAG, mResolveInfo.activityInfo.applicationInfo.packageName, mResolveInfo.activityInfo.name);
                     arirusLog.get().ShowLog(TAG, getActivity().getPackageName(), NerdLauncherActivity.class.getName()); //这种方法用于启动同一个app中的不同activity
