@@ -65,7 +65,8 @@ public class NerdLauncherFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent().
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).
+                    addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK).
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT).
                     setClassName(mResolveInfo.activityInfo.applicationInfo.packageName,mResolveInfo.activityInfo.name);
 
                     startActivity(intent);
